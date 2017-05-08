@@ -1,4 +1,4 @@
-package com.zjy.mp3player;
+package com.zjy.mp3player.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -6,6 +6,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
+
+import com.zjy.mp3player.model.MusicInfo;
+import com.zjy.mp3player.R;
 
 import java.util.ArrayList;
 
@@ -19,7 +22,7 @@ public class SongListAdapter extends BaseAdapter {
     private Context context;
     private ArrayList<MusicInfo> songList;
 
-    SongListAdapter(Context context, ArrayList<MusicInfo> list) {
+    public SongListAdapter(Context context, ArrayList<MusicInfo> list) {
         this.context = context;
         this.songList = list;
     }

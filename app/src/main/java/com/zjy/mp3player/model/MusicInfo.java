@@ -1,4 +1,4 @@
-package com.zjy.mp3player;
+package com.zjy.mp3player.model;
 
 import android.os.Bundle;
 import android.os.Parcel;

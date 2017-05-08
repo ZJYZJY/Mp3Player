@@ -8,6 +8,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.zjy.mp3player.adapter.SongListAdapter;
+import com.zjy.mp3player.model.MusicInfo;
+
 import java.util.ArrayList;
 
 public class MusicListActivity extends AppCompatActivity {

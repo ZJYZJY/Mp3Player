@@ -1,4 +1,4 @@
-package com.zjy.mp3player;
+package com.zjy.mp3player.utils;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import android.database.Cursor;
 import android.provider.MediaStore;
 import android.util.Log;
+
+import com.zjy.mp3player.model.MusicInfo;
 
 /**
  * com.zjy.mp3player

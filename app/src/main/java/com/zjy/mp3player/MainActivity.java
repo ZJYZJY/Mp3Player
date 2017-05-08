@@ -3,6 +3,7 @@ package com.zjy.mp3player;
 import android.animation.ObjectAnimator;
 import android.content.ComponentName;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -14,6 +15,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.provider.MediaStore;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -27,6 +29,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.zjy.mp3player.adapter.ViewPagerAdapter;
+import com.zjy.mp3player.fragment.AlbumPicFragment;
+import com.zjy.mp3player.fragment.MusicListFragment;
+import com.zjy.mp3player.listener.OnMusicChangedListener;
+import com.zjy.mp3player.model.MusicInfo;
+import com.zjy.mp3player.service.MusicService;
+import com.zjy.mp3player.utils.MusicUtils;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 
@@ -36,19 +46,25 @@ import jp.wasabeef.blurry.Blurry;
  * com.zjy.mp3player
  * Created by 73958 on 2017/5/5.
  */
-public class MainActivity extends AppCompatActivity implements View.OnClickListener, OnMusicChangedListener {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener,
+        OnMusicChangedListener, ViewPager.OnPageChangeListener {
     private TextView musicStatus, musicTime, musicTotal, musicTitle;
     private SeekBar seekBar;
 
-    private ImageButton btnPlayOrPause, btnQuit, btnList, btnPre, btnNext;
+    public ImageButton btnPlayOrPause, btnQuit, btnList, btnPre, btnNext;
     private SimpleDateFormat time = new SimpleDateFormat("mm:ss");
     private ImageView albumImage, albumBackground;
+    public ViewPager viewPager;
+    private ViewPagerAdapter adapter;
 
     private boolean tag1 = false;
     private boolean tag2 = false;
-    private MusicService musicService;
+    public MusicService musicService;
 
-    public static ArrayList<MusicInfo> musicArrayList;
+    private AlbumPicFragment albumPicFragment;
+    private MusicListFragment musicListFragment;
+
+    public ArrayList<MusicInfo> musicArrayList;
 
     // 回调onServiceConnected 函数，通过IBinder 获取 Service对象，实现Activity与 Service的绑定
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -76,7 +92,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // 设置专辑封面
             String albumPath = getAlbumArt(musicArrayList.get(0).getAlbumId());
             Bitmap albumPic = BitmapFactory.decodeFile(albumPath);
-            albumImage.setImageBitmap(albumPic);
+            albumPicFragment.albumImage.setImageBitmap(albumPic);
+            // 设置模糊背景
             Blurry.with(getApplicationContext()).radius(50).color(0x933a3a3a).from(albumPic).into(albumBackground);
         }
     }
@@ -101,7 +118,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         musicStatus = (TextView) findViewById(R.id.MusicStatus);
         musicTitle = (TextView) findViewById(R.id.music_title);
 
-        albumImage = (ImageView) findViewById(R.id.Image);
+        viewPager = (ViewPager) findViewById(R.id.viewpager);
+        viewPager.addOnPageChangeListener(this);
+//        albumImage = (ImageView) findViewById(R.id.Image);
         albumBackground = (ImageView) findViewById(R.id.blur_bg);
 
         btnPlayOrPause = (ImageButton) findViewById(R.id.BtnPlayorPause);
@@ -110,10 +129,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnPre.setOnClickListener(this);
         btnNext.setOnClickListener(this);
 
-        btnList = (ImageButton) findViewById(R.id.Btn_list);
-        btnQuit = (ImageButton) findViewById(R.id.Btn_exit);
-        btnList.setOnClickListener(this);
-        btnQuit.setOnClickListener(this);
+//        btnList = (ImageButton) findViewById(R.id.Btn_list);
+//        btnQuit = (ImageButton) findViewById(R.id.Btn_exit);
+//        btnList.setOnClickListener(this);
+//        btnQuit.setOnClickListener(this);
     }
 
     @Override
@@ -125,8 +144,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         toolbar.getBackground().setAlpha(8);
         setSupportActionBar(toolbar);
         findViewById();
-        startSearch();
-        mediaControl();
+
+        Context context = getApplicationContext();
+        adapter = new ViewPagerAdapter(getSupportFragmentManager(), context);
+        musicListFragment = new MusicListFragment();
+        albumPicFragment = new AlbumPicFragment();
+        adapter.addFragment(musicListFragment);
+        adapter.addFragment(albumPicFragment);
+        viewPager.setAdapter(adapter);
+        viewPager.setCurrentItem(1);
+
+//        startSearch();
+//        mediaControl();
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -148,8 +177,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
     }
 
-    private void mediaControl(){
-        ImageView imageView = (ImageView) findViewById(R.id.Image);
+    public void mediaControl(){
+//        ImageView imageView = (ImageView) findViewById(R.id.Image);
+        ImageView imageView = albumPicFragment.albumImage;
         final ObjectAnimator animator = ObjectAnimator.ofFloat(imageView, "rotation", 0f, 360.0f);
         animator.setDuration(10000);
         animator.setInterpolator(new LinearInterpolator());
@@ -201,7 +231,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     };
 
-    private void startSearch(){
+    public void startSearch(){
         new Thread(new Runnable() {
             public void run() {
                 Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;//-------------
@@ -228,7 +258,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             // 设置专辑封面
             String albumPath = getAlbumArt(musicArrayList.get(musicService.playingIndex).getAlbumId());
             Bitmap albumPic = BitmapFactory.decodeFile(albumPath);
-            albumImage.setImageBitmap(albumPic);
+            albumPicFragment.albumImage.setImageBitmap(albumPic);
+            // 设置模糊背景
             Blurry.with(getApplicationContext()).radius(50).color(0x933a3a3a).from(albumPic).into(albumBackground);
         }
     }
@@ -236,22 +267,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.Btn_list:
-                Intent intent = new Intent(MainActivity.this, MusicListActivity.class);
-                intent.putExtra("list", musicArrayList);
-                startActivityForResult(intent, 0);
-                break;
-            case R.id.Btn_exit:
-                musicService.mediaPlayer.stop();
-                handler.removeCallbacks(runnable);
-                unbindService(serviceConnection);
-                stopService(new Intent(MainActivity.this, MusicService.class));
-                try {
-                    MainActivity.this.finish();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                break;
+//            case R.id.Btn_list:
+//                Intent intent = new Intent(MainActivity.this, MusicListActivity.class);
+//                intent.putExtra("list", musicArrayList);
+//                startActivityForResult(intent, 0);
+//                break;
+//            case R.id.Btn_exit:
+//                musicService.mediaPlayer.stop();
+//                handler.removeCallbacks(runnable);
+//                unbindService(serviceConnection);
+//                stopService(new Intent(MainActivity.this, MusicService.class));
+//                try {
+//                    MainActivity.this.finish();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//                break;
             case R.id.Btn_pre:
                 musicService.previous();
                 btnPlayOrPause.performClick();
@@ -301,6 +332,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             return true;
         }
         return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+    }
+
+    @Override
+    public void onPageSelected(int position) {
+        if(position == 0){
+            musicListFragment.update();
+        }
+    }
+
+    @Override
+    public void onPageScrollStateChanged(int state) {
+
     }
 }
 

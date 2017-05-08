@@ -1,14 +1,14 @@
-package com.zjy.mp3player;
+package com.zjy.mp3player.service;
 
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
-import android.util.Log;
 import android.widget.Toast;
+
+import com.zjy.mp3player.listener.OnMusicChangedListener;
+import com.zjy.mp3player.model.MusicInfo;
 
 import java.util.ArrayList;
 
@@ -32,7 +32,7 @@ public class MusicService extends Service {
     public MyBinder binder = new MyBinder();
 
     public class MyBinder extends Binder {
-        MusicService getService() {
+        public MusicService getService() {
             return MusicService.this;
         }
     }
@@ -52,7 +52,7 @@ public class MusicService extends Service {
         }
     }
 
-    private void play(int index){
+    public void play(int index){
         try {
             mediaPlayer.reset(); //重置多媒体
             mediaPlayer.setDataSource(musicInfos.get(index).getData());
