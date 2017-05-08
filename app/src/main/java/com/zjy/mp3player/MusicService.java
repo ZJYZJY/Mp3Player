@@ -44,7 +44,9 @@ public class MusicService extends Service {
             mediaPlayer.prepare();
             mediaPlayer.setLooping(true);
             playingIndex = index;
-            listener.onMusicChanged();
+            if(listener != null){
+                listener.onMusicChanged();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -87,23 +89,13 @@ public class MusicService extends Service {
         }
     }
 
+    public void stop(){
+        mediaPlayer.stop();
+    }
+
     public void setOnMusicChangedListener(OnMusicChangedListener listener){
         this.listener = listener;
     }
-
-//    public void stop() {
-//        if (mediaPlayer != null) {
-//            mediaPlayer.stop();
-//            try {
-//                mediaPlayer.reset();
-//                mediaPlayer.setDataSource("/storage/emulated/0/netease/cloudmusic/Music/李玉刚 - 刚好遇见你.mp3");
-//                mediaPlayer.prepare();
-//                mediaPlayer.seekTo(0);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 
     @Override
     public boolean onUnbind(Intent intent) {

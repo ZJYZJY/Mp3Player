@@ -51,8 +51,6 @@ public class MusicUtils {
             String folderPath = filePath.substring(0,
                     filePath.lastIndexOf(File.separator));
             music.folder = folderPath;
-            music.musicNameKey = StringHelper.getFirstLetter(music.musicName);
-            music.artistKey = StringHelper.getFirstLetter(music.artist);
             musicList.add(music);
         }
         cursor.close();
